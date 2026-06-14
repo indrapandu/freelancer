@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Freelancer Live Projects</title>
+
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --primary: #1a56db;
+      --primary-hover: #1648b8;
+      --soft: #eef2ff;
+      --error-bg: #fff3f3;
+      --error-border: #ffd0d0;
+      --error-text: #b00020;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .app {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .subtitle {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    input,
+    select {
+      height: 36px;
+      padding: 7px 10px;
+      border: 1px solid #ccc;
+      border-radius: 7px;
+      background: #fff;
+      font-size: 13px;
+      min-width: 180px;
+    }
+
+    input {
+      min-width: 240px;
+    }
+
+    button {
+      height: 36px;
+      padding: 7px 12px;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      background: var(--primary);
+      color: #fff;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      background: var(--primary-hover);
+    }
+
+    button.secondary {
+      background: #374151;
+    }
+
+    button.secondary:hover {
+      background: #1f2937;
+    }
+
+    button:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .status {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .message {
+      margin-bottom: 12px;
+    }
+
+    .empty,
+    .error {
+      background: var(--card);
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 13px;
+    }
+
+    .empty {
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .error {
+      background: var(--error-bg);
+      border: 1px solid var(--error-border);
+      color: var(--error-text);
+      white-space: pre-wrap;
+    }
+
+    .project-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .project {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.06);
+    }
+
+    .project-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 6px;
+    }
+
+    .title {
+      font-weight: bold;
+      font-size: 15px;
+      line-height: 1.4;
+    }
+
+    .title a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .title a:hover {
+      text-decoration: underline;
+    }
+
+    .age {
+      font-size: 11px;
+      color: #fff;
+      background: #111827;
+      border-radius: 999px;
+      padding: 4px 8px;
+      white-space: nowrap;
+    }
+
+    .meta {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+
+    .desc {
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 9px;
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--soft);
+      color: #333;
+      padding: 4px 7px;
+      border-radius: 7px;
+      font-size: 11px;
+    }
+
+    @media (max-width: 700px) {
+      body {
+        padding: 12px;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+      }
+
+      input,
+      select {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .controls {
+        width: 100%;
+      }
+
+      button {
+        flex: 1;
+      }
+
+      .project-head {
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .age {
+        width: fit-content;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <div class="header">
+      <div>
+        <h2>Live Projects</h2>
+        <div class="subtitle">Freelancer API refresher — GitHub Pages / Vanilla JavaScript</div>
+      </div>
+
+      <div class="controls">
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="Search title, description, job..."
+          oninput="applyFilters()"
+        >
+
+        <select id="jobFilter" onchange="applyFilters()">
+          <option value="">All Jobs</option>
+        </select>
+
+        <button id="refreshBtn" onclick="loadProjects(true)">Refresh Now</button>
+        <button id="toggleBtn" class="secondary" onclick="toggleAutoRefresh()">Pause Auto</button>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-label">Total Loaded</div>
+        <div class="stat-value" id="totalLoaded">0</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Showing</div>
+        <div class="stat-value" id="totalShowing">0</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Last Updated</div>
+        <div class="stat-value" id="lastUpdated">-</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Next Refresh</div>
+        <div class="stat-value" id="nextRefresh">-</div>
+      </div>
+    </div>
+
+    <div class="status" id="status">Loading...</div>
+    <div class="message" id="message"></div>
+    <div class="project-list" id="projects"></div>
+  </div>
+
+  <script>
+    const REFRESH_INTERVAL_MS = 30000;
+
+    const API_URL =
+      'https://www.freelancer.com/api/projects/0.1/projects/active' +
+      '?limit=100' +
+      '&full_description=true' +
+      '&job_details=true' +
+      '&local_details=true' +
+      '&location_details=true' +
+      '&upgrade_details=true' +
+      '&jobs[]=55' +
+      '&jobs[]=124' +
+      '&jobs[]=504' +
+      '&jobs[]=1035' +
+      '&jobs[]=1045' +
+      '&jobs[]=197' +
+      '&jobs[]=1311' +
+      '&jobs[]=1503' +
+      '&jobs[]=1645' +
+      '&jobs[]=1646' +
+      '&jobs[]=1658' +
+      '&jobs[]=2481' +
+      '&jobs[]=2620' +
+      '&languages[]=en' +
+      '&sort_field=submitdate' +
+      '&webapp=1' +
+      '&compact=true' +
+      '&new_errors=true' +
+      '&new_pools=true';
+
+    let allProjects = [];
+    let filteredProjects = [];
+    let autoRefreshEnabled = true;
+    let nextRefreshAt = null;
+    let refreshTimer = null;
+    let countdownTimer = null;
+    let isLoading = false;
+
+    async function loadProjects(isManual = false) {
+      if (isLoading) return;
+
+      isLoading = true;
+      setLoadingState(true);
+
+      document.getElementById('message').innerHTML = '';
+      document.getElementById('status').textContent = isManual
+        ? 'Manual refresh running...'
+        : 'Refreshing projects...';
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'GET',
+          cache: 'no-store'
+        });
+
+        const text = await response.text();
+
+        if (!response.ok) {
+          throw new Error(
+            'API Error ' + response.status + '\n\n' + text.substring(0, 1000)
+          );
+        }
+
+        const rawData = JSON.parse(text);
+        const cleanData = cleanApiData(rawData);
+
+        handleApiResponse(cleanData);
+      } catch (error) {
+        showError(
+          error.message +
+          '\n\nNote: Kalau error tertulis CORS, berarti Freelancer API tidak mengizinkan request langsung dari browser/GitHub Pages.'
+        );
+      } finally {
+        isLoading = false;
+        setLoadingState(false);
+        scheduleNextRefresh();
+      }
+    }
+
+    function cleanApiData(data) {
+      const projects =
+        data &&
+        data.result &&
+        Array.isArray(data.result.projects)
+          ? data.result.projects
+          : [];
+
+      return {
+        error: false,
+        projects: projects.map(function(p) {
+          return {
+            title: p.title || 'Untitled Project',
+
+            description: String(
+              p.preview_description ||
+              p.description ||
+              ''
+            ).substring(0, 500),
+
+            budgetMin:
+              p.budget && p.budget.minimum
+                ? p.budget.minimum
+                : '',
+
+            budgetMax:
+              p.budget && p.budget.maximum
+                ? p.budget.maximum
+                : '',
+
+            currency:
+              p.currency && p.currency.code
+                ? p.currency.code
+                : '',
+
+            submitDate:
+              p.submitdate ||
+              p.submit_date ||
+              p.time_submitted ||
+              p.date_submitted ||
+              p.created ||
+              '',
+
+            jobs: Array.isArray(p.jobs)
+              ? p.jobs.map(function(j) {
+                  return j.name || j;
+                })
+              : [],
+
+            url: p.seo_url
+              ? 'https://www.freelancer.com/projects/' + p.seo_url
+              : '#'
+          };
+        })
+      };
+    }
+
+    function handleApiResponse(data) {
+      if (!data) {
+        showEmpty('No response received.');
+        return;
+      }
+
+      if (data.error) {
+        showError(data.message || 'Unknown API error');
+        return;
+      }
+
+      allProjects = Array.isArray(data.projects) ? data.projects : [];
+
+      allProjects.sort(function(a, b) {
+        return getDateMs(b.submitDate) - getDateMs(a.submitDate);
+      });
+
+      buildJobFilter(allProjects);
+      applyFilters();
+
+      document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+      document.getElementById('status').textContent =
+        'Loaded successfully at ' + new Date().toLocaleString();
+    }
+
+    function buildJobFilter(projects) {
+      const select = document.getElementById('jobFilter');
+      const currentValue = select.value;
+
+      const jobs = new Set();
+
+      projects.forEach(function(project) {
+        getProjectJobs(project).forEach(function(job) {
+          if (job) jobs.add(job);
+        });
+      });
+
+      const sortedJobs = Array.from(jobs).sort(function(a, b) {
+        return a.localeCompare(b);
+      });
+
+      select.innerHTML = '<option value="">All Jobs</option>';
+
+      sortedJobs.forEach(function(job) {
+        const option = document.createElement('option');
+        option.value = job;
+        option.textContent = job;
+        select.appendChild(option);
+      });
+
+      if (sortedJobs.includes(currentValue)) {
+        select.value = currentValue;
+      }
+    }
+
+    function applyFilters() {
+      const jobValue = document.getElementById('jobFilter').value;
+      const searchValue = document.getElementById('searchInput').value.trim().toLowerCase();
+
+      filteredProjects = allProjects.filter(function(project) {
+        const jobs = getProjectJobs(project);
+
+        const matchJob = !jobValue || jobs.includes(jobValue);
+
+        const searchableText = [
+          project.title || '',
+          project.description || '',
+          jobs.join(' ')
+        ].join(' ').toLowerCase();
+
+        const matchSearch = !searchValue || searchableText.includes(searchValue);
+
+        return matchJob && matchSearch;
+      });
+
+      renderProjectCards(filteredProjects);
+
+      document.getElementById('totalLoaded').textContent = allProjects.length;
+      document.getElementById('totalShowing').textContent = filteredProjects.length;
+    }
+
+    function renderProjectCards(projects) {
+      const container = document.getElementById('projects');
+      container.innerHTML = '';
+
+      if (!projects.length) {
+        showEmpty('No projects found for the current filter.');
+        return;
+      }
+
+      document.getElementById('message').innerHTML = '';
+
+      projects.forEach(function(project) {
+        const card = document.createElement('div');
+        card.className = 'project';
+
+        const title = project.title || 'Untitled Project';
+        const description = project.description || '';
+        const url = sanitizeUrl(project.url);
+        const jobs = getProjectJobs(project);
+        const submitDate = formatSubmitDate(project.submitDate);
+        const timeAgo = formatTimeAgo(project.submitDate);
+        const budget = formatBudget(project);
+
+        card.innerHTML = `
+          <div class="project-head">
+            <div class="title">
+              <a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">
+                ${escapeHtml(title)}
+              </a>
+            </div>
+            <div class="age">${escapeHtml(timeAgo)}</div>
+          </div>
+
+          <div class="meta">
+            Submit Date: ${escapeHtml(submitDate)}<br>
+            Budget: ${escapeHtml(budget)}
+          </div>
+
+          <div class="desc">
+            ${escapeHtml(trimText(description, 350))}
+          </div>
+
+          <div class="badges">
+            ${
+              jobs.length
+                ? jobs.map(function(job) {
+                    return '<span class="badge">' + escapeHtml(job) + '</span>';
+                  }).join('')
+                : '<span class="badge">No Job Tag</span>'
+            }
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function toggleAutoRefresh() {
+      autoRefreshEnabled = !autoRefreshEnabled;
+
+      document.getElementById('toggleBtn').textContent = autoRefreshEnabled
+        ? 'Pause Auto'
+        : 'Resume Auto';
+
+      if (autoRefreshEnabled) {
+        scheduleNextRefresh();
+        document.getElementById('status').textContent = 'Auto refresh resumed.';
+      } else {
+        clearTimeout(refreshTimer);
+        nextRefreshAt = null;
+        document.getElementById('nextRefresh').textContent = 'Paused';
+        document.getElementById('status').textContent = 'Auto refresh paused.';
+      }
+    }
+
+    function scheduleNextRefresh() {
+      clearTimeout(refreshTimer);
+
+      if (!autoRefreshEnabled) {
+        nextRefreshAt = null;
+        document.getElementById('nextRefresh').textContent = 'Paused';
+        return;
+      }
+
+      nextRefreshAt = Date.now() + REFRESH_INTERVAL_MS;
+
+      refreshTimer = setTimeout(function() {
+        loadProjects(false);
+      }, REFRESH_INTERVAL_MS);
+    }
+
+    function startCountdown() {
+      clearInterval(countdownTimer);
+
+      countdownTimer = setInterval(function() {
+        if (!autoRefreshEnabled || !nextRefreshAt) {
+          return;
+        }
+
+        const remainingMs = Math.max(0, nextRefreshAt - Date.now());
+        const remainingSeconds = Math.ceil(remainingMs / 1000);
+
+        document.getElementById('nextRefresh').textContent =
+          remainingSeconds + 's';
+      }, 1000);
+    }
+
+    function setLoadingState(loading) {
+      document.getElementById('refreshBtn').disabled = loading;
+      document.getElementById('refreshBtn').textContent = loading
+        ? 'Refreshing...'
+        : 'Refresh Now';
+    }
+
+    function showEmpty(message) {
+      document.getElementById('message').innerHTML =
+        '<div class="empty">' + escapeHtml(message) + '</div>';
+
+      document.getElementById('projects').innerHTML = '';
+      document.getElementById('totalLoaded').textContent = allProjects.length;
+      document.getElementById('totalShowing').textContent = 0;
+    }
+
+    function showError(message) {
+      document.getElementById('status').textContent = 'Failed to load projects';
+
+      document.getElementById('message').innerHTML =
+        '<div class="error">' + escapeHtml(String(message || 'Unknown error')) + '</div>';
+    }
+
+    function getProjectJobs(project) {
+      return Array.isArray(project.jobs)
+        ? project.jobs.map(function(job) {
+            return String(job || '').trim();
+          }).filter(Boolean)
+        : [];
+    }
+
+    function formatBudget(project) {
+      const min = project.budgetMin || '';
+      const max = project.budgetMax || '';
+      const currency = project.currency || '';
+
+      if (!min && !max) return 'No budget';
+
+      if (min && max) return min + ' - ' + max + ' ' + currency;
+      if (min) return 'From ' + min + ' ' + currency;
+      return 'Up to ' + max + ' ' + currency;
+    }
+
+    function parseDate(value) {
+      if (!value) return null;
+
+      let date;
+
+      if (!isNaN(value)) {
+        const timestamp = Number(value);
+        date = new Date(timestamp < 1000000000000 ? timestamp * 1000 : timestamp);
+      } else {
+        date = new Date(value);
+      }
+
+      return isNaN(date.getTime()) ? null : date;
+    }
+
+    function getDateMs(value) {
+      const date = parseDate(value);
+      return date ? date.getTime() : 0;
+    }
+
+    function formatSubmitDate(value) {
+      const date = parseDate(value);
+      return date ? date.toLocaleString() : 'No submit date';
+    }
+
+    function formatTimeAgo(value) {
+      const date = parseDate(value);
+
+      if (!date) return 'Time unavailable';
+
+      const diffMs = Date.now() - date.getTime();
+      const diffSeconds = Math.floor(diffMs / 1000);
+      const diffMinutes = Math.floor(diffSeconds / 60);
+      const diffHours = Math.floor(diffMinutes / 60);
+      const diffDays = Math.floor(diffHours / 24);
+      const diffWeeks = Math.floor(diffDays / 7);
+      const diffMonths = Math.floor(diffDays / 30);
+      const diffYears = Math.floor(diffDays / 365);
+
+      if (diffSeconds < 60) return 'Just now';
+      if (diffMinutes === 1) return '1 minute ago';
+      if (diffMinutes < 60) return diffMinutes + ' minutes ago';
+      if (diffHours === 1) return '1 hour ago';
+      if (diffHours < 24) return diffHours + ' hours ago';
+      if (diffDays === 1) return '1 day ago';
+      if (diffDays < 7) return diffDays + ' days ago';
+      if (diffWeeks === 1) return '1 week ago';
+      if (diffWeeks < 5) return diffWeeks + ' weeks ago';
+      if (diffMonths === 1) return '1 month ago';
+      if (diffMonths < 12) return diffMonths + ' months ago';
+      if (diffYears === 1) return '1 year ago';
+
+      return diffYears + ' years ago';
+    }
+
+    function trimText(value, maxLength) {
+      const text = String(value || '');
+
+      if (text.length <= maxLength) return text;
+
+      return text.substring(0, maxLength).trim() + '...';
+    }
+
+    function sanitizeUrl(url) {
+      if (!url) return '#';
+
+      const value = String(url).trim();
+
+      if (value.startsWith('https://') || value.startsWith('http://')) {
+        return value;
+      }
+
+      return '#';
+    }
+
+    function escapeHtml(value) {
+      if (value === null || value === undefined) return '';
+
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    loadProjects(false);
+    startCountdown();
+  </script>
+</body>
+</html>
