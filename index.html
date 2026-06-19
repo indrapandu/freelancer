@@ -110,6 +110,69 @@
       cursor: not-allowed;
     }
 
+    /* Currency dropdown (multi-select) */
+    .dropdown-wrap {
+      position: relative;
+    }
+
+    .dropdown-toggle {
+      min-width: 150px;
+      text-align: left;
+    }
+
+    .dropdown-panel {
+      position: absolute;
+      top: 42px;
+      right: 0;
+      z-index: 20;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+      padding: 10px;
+      min-width: 200px;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    .dropdown-actions {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dropdown-actions button {
+      flex: 1;
+      height: 28px;
+      font-size: 11px;
+      padding: 4px 6px;
+    }
+
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      padding: 5px 2px;
+      cursor: pointer;
+    }
+
+    .dropdown-item input {
+      width: auto;
+      height: auto;
+      min-width: 0;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .dropdown-empty {
+      font-size: 12px;
+      color: var(--muted);
+      padding: 6px 2px;
+    }
+
     .stats {
       display: grid;
       grid-template-columns: repeat(4, minmax(120px, 1fr));
@@ -262,6 +325,16 @@
         flex: 1;
       }
 
+      .dropdown-wrap {
+        width: 100%;
+      }
+
+      .dropdown-panel {
+        left: 0;
+        right: auto;
+        width: 100%;
+      }
+
       .project-head {
         flex-direction: column;
         gap: 6px;
@@ -293,6 +366,25 @@
         <select id="jobFilter" onchange="applyFilters()">
           <option value="">All Jobs</option>
         </select>
+
+        <div class="dropdown-wrap" id="currencyDropdownWrap">
+          <button
+            type="button"
+            class="secondary dropdown-toggle"
+            id="currencyDropdownToggle"
+            onclick="toggleCurrencyDropdown(event)"
+          >
+            Currencies: All
+          </button>
+
+          <div class="dropdown-panel" id="currencyDropdownPanel" hidden>
+            <div class="dropdown-actions">
+              <button type="button" onclick="selectAllCurrencies()">Select All</button>
+              <button type="button" onclick="clearAllCurrencies()">Clear All</button>
+            </div>
+            <div id="currencyCheckboxList"></div>
+          </div>
+        </div>
 
         <button id="refreshBtn" onclick="loadProjects(true)">Refresh Now</button>
         <button id="toggleBtn" class="secondary" onclick="toggleAutoRefresh()">Pause Auto</button>
@@ -364,6 +456,14 @@
     let refreshTimer = null;
     let countdownTimer = null;
     let isLoading = false;
+
+    // Currency multi-select filter state.
+    // We track DESELECTED currencies (instead of selected ones) so that
+    // any newly discovered currency on refresh defaults to "selected",
+    // matching the "all currencies selected by default" requirement,
+    // while still respecting choices the user already made.
+    let knownCurrencies = [];
+    let deselectedCurrencies = new Set();
 
     async function loadProjects(isManual = false) {
       if (isLoading) return;
@@ -481,6 +581,7 @@
       });
 
       buildJobFilter(allProjects);
+      buildCurrencyFilter(allProjects);
       applyFilters();
 
       document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
@@ -518,14 +619,132 @@
       }
     }
 
+    // Builds/refreshes the list of known currencies from the loaded
+    // projects. Newly seen currencies are selected by default; currencies
+    // the user already deselected stay deselected across refreshes.
+    function buildCurrencyFilter(projects) {
+      const currencySet = new Set();
+
+      projects.forEach(function(project) {
+        currencySet.add(getProjectCurrency(project));
+      });
+
+      knownCurrencies = Array.from(currencySet).sort(function(a, b) {
+        return a.localeCompare(b);
+      });
+
+      // Drop deselected entries for currencies that no longer exist
+      // in the loaded data, so the set doesn't grow unbounded.
+      deselectedCurrencies.forEach(function(code) {
+        if (!knownCurrencies.includes(code)) {
+          deselectedCurrencies.delete(code);
+        }
+      });
+
+      renderCurrencyCheckboxes();
+      updateCurrencyToggleLabel();
+    }
+
+    function renderCurrencyCheckboxes() {
+      const list = document.getElementById('currencyCheckboxList');
+      list.innerHTML = '';
+
+      if (!knownCurrencies.length) {
+        list.innerHTML = '<div class="dropdown-empty">No currencies available.</div>';
+        return;
+      }
+
+      knownCurrencies.forEach(function(code) {
+        const id = 'currency-opt-' + code.replace(/[^a-zA-Z0-9]/g, '');
+        const isChecked = !deselectedCurrencies.has(code);
+
+        const label = document.createElement('label');
+        label.className = 'dropdown-item';
+        label.setAttribute('for', id);
+
+        label.innerHTML =
+          '<input type="checkbox" id="' + id + '" ' + (isChecked ? 'checked' : '') + '>' +
+          '<span>' + escapeHtml(code) + '</span>';
+
+        label.querySelector('input').addEventListener('change', function(e) {
+          toggleCurrencySelection(code, e.target.checked);
+        });
+
+        list.appendChild(label);
+      });
+    }
+
+    function toggleCurrencySelection(code, checked) {
+      if (checked) {
+        deselectedCurrencies.delete(code);
+      } else {
+        deselectedCurrencies.add(code);
+      }
+
+      updateCurrencyToggleLabel();
+      applyFilters();
+    }
+
+    function selectAllCurrencies() {
+      deselectedCurrencies.clear();
+      renderCurrencyCheckboxes();
+      updateCurrencyToggleLabel();
+      applyFilters();
+    }
+
+    function clearAllCurrencies() {
+      deselectedCurrencies = new Set(knownCurrencies);
+      renderCurrencyCheckboxes();
+      updateCurrencyToggleLabel();
+      applyFilters();
+    }
+
+    function updateCurrencyToggleLabel() {
+      const toggle = document.getElementById('currencyDropdownToggle');
+      const total = knownCurrencies.length;
+      const selected = total - deselectedCurrencies.size;
+
+      let label;
+      if (!total) {
+        label = 'Currencies: -';
+      } else if (selected === total) {
+        label = 'Currencies: All';
+      } else if (selected === 0) {
+        label = 'Currencies: None';
+      } else {
+        label = 'Currencies: ' + selected + '/' + total;
+      }
+
+      toggle.textContent = label;
+    }
+
+    function toggleCurrencyDropdown(event) {
+      if (event) event.stopPropagation();
+      const panel = document.getElementById('currencyDropdownPanel');
+      panel.hidden = !panel.hidden;
+    }
+
+    document.addEventListener('click', function(e) {
+      const wrap = document.getElementById('currencyDropdownWrap');
+      const panel = document.getElementById('currencyDropdownPanel');
+
+      if (!wrap || panel.hidden) return;
+
+      if (!wrap.contains(e.target)) {
+        panel.hidden = true;
+      }
+    });
+
     function applyFilters() {
       const jobValue = document.getElementById('jobFilter').value;
       const searchValue = document.getElementById('searchInput').value.trim().toLowerCase();
 
       filteredProjects = allProjects.filter(function(project) {
         const jobs = getProjectJobs(project);
+        const currency = getProjectCurrency(project);
 
         const matchJob = !jobValue || jobs.includes(jobValue);
+        const matchCurrency = !deselectedCurrencies.has(currency);
 
         const searchableText = [
           project.title || '',
@@ -535,7 +754,7 @@
 
         const matchSearch = !searchValue || searchableText.includes(searchValue);
 
-        return matchJob && matchSearch;
+        return matchJob && matchCurrency && matchSearch;
       });
 
       renderProjectCards(filteredProjects);
@@ -680,6 +899,11 @@
             return String(job || '').trim();
           }).filter(Boolean)
         : [];
+    }
+
+    function getProjectCurrency(project) {
+      const code = project && project.currency ? String(project.currency).trim() : '';
+      return code || 'N/A';
     }
 
     function formatBudget(project) {
